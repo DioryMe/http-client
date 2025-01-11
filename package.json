@@ -9,7 +9,8 @@
     "dist"
   ],
   "dependencies": {
-    "@diograph/diograph": "0.2.5-rc1"
+    "@diograph/diograph": "0.2.5-rc1",
+    "axios": "*"
   },
   "devDependencies": {
     "@types/jest": "^29.2.2",
