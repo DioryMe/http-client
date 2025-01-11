@@ -18,15 +18,17 @@ class HttpClient implements ConnectionClient {
   }
 
   verify = async () => {
+    console.log(`HttpClient verify (${this.address})`)
     try {
-      const response = await axios.get(this.address)
-      return response.status >= 200 && response.status < 300
-    } catch (error) {
-      throw new Error(`Failed to verify address: ${this.address}`)
+      const response = await this.exists(`${this.address}/diograph.json`)
+      return response
+    } catch (error: any) {
+      throw new Error(`Failed to verify address: ${this.address}, ${error.message}`)
     }
   }
 
   exists = async (url: string) => {
+    console.log(`HttpClient exists (${url})`)
     try {
       const response = await axios.head(this.resolveUrl(url))
       return response.status === 200
@@ -36,38 +38,45 @@ class HttpClient implements ConnectionClient {
   }
 
   readTextItem = async (url: string) => {
+    console.log(`HttpClient read text item (${url})`)
     const response = await axios.get(this.resolveUrl(url), { responseType: 'text' })
     return response.data
   }
 
   readItem = async (url: string) => {
+    console.log(`HttpClient read item (${url})`)
     const response = await axios.get(this.resolveUrl(url), { responseType: 'arraybuffer' })
     return response.data
   }
 
   readToStream = async (url: string) => {
+    console.log(`HttpClient read to stream (${url})`)
     const response = await axios.get(this.resolveUrl(url), { responseType: 'stream' })
     return response.data
   }
 
   writeTextItem = async (url: string, fileContent: string) => {
-    throw new Error('HttpClient supports only read operations')
+    throw new Error('HttpClient supports only read operations: writeTextItem')
   }
 
   writeItem = async (url: string, fileContent: ArrayBuffer | string) => {
-    throw new Error('HttpClient supports only read operations')
+    // TODO: Prevent @diograph/diograph to call saveRoom() if nothing has changed
+    // - this prevents supporting this kind of read-only clients
+    // throw new Error(`HttpClient supports only read operations: writeItem (${url})`)
+    console.log(`HttpClient supports only read operations: writeItem (${url}) `)
+    return true
   }
 
   deleteItem = async (url: string) => {
-    throw new Error('HttpClient supports only read operations')
+    throw new Error(`HttpClient supports only read operations: deleteItem (${url})`)
   }
 
   deleteFolder = async (url: string) => {
-    throw new Error('HttpClient supports only read operations')
+    throw new Error(`HttpClient supports only read operations: deleteFolder (${url})`)
   }
 
   list = async (url: string) => {
-    throw new Error("HttpClient doesn't support list operation")
+    throw new Error(`HttpClient doesn't support list operation (${url})`)
   }
 }
 
