@@ -4,13 +4,15 @@ import { ConnectionClient } from '@diograph/diograph/types'
 class HttpClient implements ConnectionClient {
   address: string
   type: string
+  token?: string
 
-  constructor(address: string) {
+  constructor(address: string, token?: string) {
     if (!address) {
       throw new Error('Please provide address for new HttpClient()')
     }
     this.address = address
     this.type = this.constructor.name
+    this.token = token
   }
 
   private resolveUrl(url: string): string {
@@ -38,14 +40,20 @@ class HttpClient implements ConnectionClient {
   }
 
   readTextItem = async (url: string) => {
-    console.log(`HttpClient read text item (${url})`)
-    const response = await axios.get(this.resolveUrl(url), { responseType: 'text' })
+    console.log(`HttpClient read text item with auth header (${url})`)
+    const response = await axios.get(this.resolveUrl(url), {
+      headers: this.token ? { Authorization: this.token } : {},
+      responseType: 'text',
+    })
     return response.data
   }
 
   readItem = async (url: string) => {
-    console.log(`HttpClient read item (${url})`)
-    const response = await axios.get(this.resolveUrl(url), { responseType: 'arraybuffer' })
+    console.log(`HttpClient read item with auth header (${url})`)
+    const response = await axios.get(this.resolveUrl(url), {
+      headers: this.token ? { Authorization: this.token } : {},
+      responseType: 'arraybuffer',
+    })
     return response.data
   }
 
