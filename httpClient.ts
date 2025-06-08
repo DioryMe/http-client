@@ -1,18 +1,25 @@
-import axios from 'axios'
+import axios, { RawAxiosRequestHeaders } from 'axios'
 import { ConnectionClient } from '@diograph/diograph/types'
+
+export interface HttpClientCredentials {
+  basicAuthToken: string
+}
 
 class HttpClient implements ConnectionClient {
   address: string
   type: string
-  token?: string
+  headers?: RawAxiosRequestHeaders
 
-  constructor(address: string, token?: string) {
+  constructor(address: string, credentials?: HttpClientCredentials) {
     if (!address) {
       throw new Error('Please provide address for new HttpClient()')
     }
     this.address = address
     this.type = this.constructor.name
-    this.token = token
+    if (credentials) {
+      const basicAuthToken = credentials.basicAuthToken
+      this.headers = { Authorization: `Bearer ${basicAuthToken}` }
+    }
   }
 
   private resolveUrl(url: string): string {
@@ -32,7 +39,9 @@ class HttpClient implements ConnectionClient {
   exists = async (url: string) => {
     console.log(`HttpClient exists (${url})`)
     try {
-      const response = await axios.head(this.resolveUrl(url))
+      const response = await axios.head(this.resolveUrl(url), {
+        headers: this.headers ?? {},
+      })
       return response.status === 200
     } catch (error) {
       return false
@@ -40,18 +49,18 @@ class HttpClient implements ConnectionClient {
   }
 
   readTextItem = async (url: string) => {
-    console.log(`HttpClient read text item with auth header (${url})`)
+    console.log(`HttpClient read text item with headers (${JSON.stringify(this.headers)}) (${url})`)
     const response = await axios.get(this.resolveUrl(url), {
-      headers: this.token ? { Authorization: this.token } : {},
+      headers: this.headers ?? {},
       responseType: 'text',
     })
     return response.data
   }
 
   readItem = async (url: string) => {
-    console.log(`HttpClient read item with auth header (${url})`)
+    console.log(`HttpClient read item with auth headers (${JSON.stringify(this.headers)}) (${url})`)
     const response = await axios.get(this.resolveUrl(url), {
-      headers: this.token ? { Authorization: this.token } : {},
+      headers: this.headers ?? {},
       responseType: 'arraybuffer',
     })
     return response.data
@@ -59,7 +68,10 @@ class HttpClient implements ConnectionClient {
 
   readToStream = async (url: string) => {
     console.log(`HttpClient read to stream (${url})`)
-    const response = await axios.get(this.resolveUrl(url), { responseType: 'stream' })
+    const response = await axios.get(this.resolveUrl(url), {
+      headers: this.headers ?? {},
+      responseType: 'stream',
+    })
     return response.data
   }
 
